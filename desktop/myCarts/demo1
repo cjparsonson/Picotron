@@ -1,0 +1,7 @@
+--[[pod_format="raw",created="2024-03-21 11:49:58",modified="2024-03-21 11:49:58",revision=0]]
+function _draw()
+	cls()
+	for i=1,24 do
+		circ(240,135,i*t(),i)
+	end
+end

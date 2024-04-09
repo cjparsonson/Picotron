@@ -1,0 +1,240 @@
+--[[pod_format="raw",created="2024-03-18 01:55:30",modified="2024-03-18 02:19:27",revision=8]]
+yotta: dependency and package manager
+ by ahrotahn <reh@ahrotahn.net>
+v1.0
+
+Usage: yotta <commands>
+Commands:
+ init
+ 	initialize a yottafile for the current directory
+ list
+ 	list the current dependencies
+   -v - verbose: list all tracked files under each dependency
+ add <cart>
+ 	add a cart ref as dependency (but don't add/remove anything yet)
+ remove <cart>
+ 	remove a cart ref as dependency (but don't add/remove anythin yet)
+ apply
+ 	make the current directory match a yottafile
+   (this is what actually adds and removes files!)
+ force
+ 	this is an apply that will reinstall every dep (for updates?)
+ util install <cart>
+ 	globally install utility cart ref
+ util uninstall <cart>
+ 	globally uninstall utility cart ref
+ util list
+ 	list all tracked util cart refs and their files
+
+---
+---
+
+The yotta command seems complicated but it's
+pretty simple if you've ever used dependency
+managers or package managers on other systems
+or for other programming languages. I'll outline
+its two major functions separately.
+
+------------------------------------
+-- YOTTA AS A DEPENDENCY MANAGER --
+------------------------------------
+
+1. > cd /ram/cart
+2. > yotta init
+3. > yotta add #bbs_id /my_libs/library.p64
+4. > yotta apply
+5. In your lua, include "./lib/bbs_id/main.lua" and include "./lib/library/main.lua"
+6. Done!
+
+Let's say you've got your cartridge, and you'd
+like to use a library that exists on the BBS that
+is compatible with yotta. Or... let's say you have
+some yotta-compatible libraries on your system
+that you've written or downloaded and you'd like
+to use their features in your current cartridge.
+Or both!
+
+Sit your terminal in /ram/cart and prepare the
+cartridge for use with yotta: yotta init. This
+will create a /ram/cart/lib directory, and a
+/ram/cart/lib/yottafile.pod file to track
+dependancies and what dependancies own what files.
+
+Now, to add a dependency, you need to know where
+it lives. If it's on the BBS, the library cartridg
+has a BBS ID, and you can supply that like you
+would with the 'load' command:
+> yotta add #bbs_id
+If your dependency lives in a file on your
+Picotron, you can specify the path:
+> yotta add /my_libs/library.p64. This will track
+the dependency by adding it to the yottafile, but
+it won't immediately install it. You can specify
+multiple packages at once from mixed sources, like:
+> yotta add #bbs_id /my_libs/library.p64
+
+When you're ready to install the dependencies into
+your cart's lib/ folder, run:
+> yotta apply.
+It will fetch the BBS carts and copy the filesystem
+carts and unpack each of their exports/ folders into
+named directories in libs/. For example, using the
+above two sources we added, you could expect to
+see something in your cart like libs/bbs_id/main.lua
+and libs/library/main.lua. Everything present in the
+target dependency cart's exports folder will be
+copied into this lib/[name] directory (except for
+.map, .sfx, and .gfx files).
+
+If a target cartridge's export folder contains
+.map, .sfx, or .gfx files, they will be copied into
+your cartridge's map/, sfx/, and gfx/ directories,
+respectively, named
+ [library_name]_[exported_filename].[ext].
+They will still be tracked by yotta, so if you
+remove the dependency and do a yotta apply, it
+will remove them cleanly.
+
+If your dependency targets update somehow, you
+can use yotta force to force it to reacquire all
+dependencies instead of simply passing over
+already-installed packages.
+
+If you decide you no longer need a package, you
+can remove it nearly the same way you add it:
+> yotta remove #bbs_id
+Then, the next yotta apply will identify this and
+remove lib/bbs_id from your cart, and delete any
+sfx/gfx/map files that were added by it. It won't
+remove the includes from your lua code - that's
+up to you!
+
+---------------------------------
+-- YOTTA AS A PACKAGE MANAGER --
+---------------------------------
+
+1. > yotta util install /my_utils/cool_util.p64 #bbs_system_package
+2. Done!
+3. Wait, I want one of them gone, it sucks!
+4. > yotta util uninstall #bbs_system_package
+5. Done!
+
+Let's say you see a cool yotta-compatible system
+package like a new command-line utility (like 'new'
+or 'merge' ;) ) on the BBS, or let's say you've
+written a yotta-compatible cartridge containing
+your utility. Or both!
+
+Grab your terminal, its location doesn't matter.
+If it's on the BBS, the package cartridge has
+a BBS ID, and you can supply that like you would
+with the 'load' command: 
+> yotta util install #bbs_system_package
+If your dependency lives in a file on your Picotron,
+you can specify the path:
+> yotta util install /my_utils/cool_util.p64
+This will track the dependency by adding it to the
+system yottafile at:
+ /appdata/system/global_yottafile.pod
+and will immediately install it.
+You can specify multiple packages at once from
+mixed sources, also, like:
+> yotta util install /my_utils/cool_util.p64 #bbs_system_package
+
+If you decide you no longer want or need a package,
+you can remove it nearly the same way you add it:
+> yotta util uninstall /my_utils/cool_util.p64
+It will be immediately uninstalled, but it won't
+remove any files created by the utility or whatever,
+only what was installed originally. If it leaves
+empty directories after it's done removing files,
+it will clean those up too.
+
+-----------------------------------
+-- BUILD LIBS FOR USE WITH YOTTA --
+-----------------------------------
+It's simple! Place whatever you'd like to be
+available in your end-user cart's lib/your_package_name
+directory into your cart's exports/ folder.
+Make it if it doesn't exist.
+If you add .sfx, .map, or .gfx files, they will
+be copied into your end-users sfx/, map/, and
+gfx/ folders, respectively, named
+ [your_package_name]_[filename_in_your_exports].[ext]
+
+If your cartridge does nothing else other than offer
+your library to folks, then you're welcome to use my
+library container utility (#lib_utilinst) to help inform
+users that this is not a 'runnable' cartridge and is
+instead a kind of 'resource' cartridge. It gives them
+the ability to view the files if they run it, but not
+much else.
+
+Once you publish your cart with the exports/ folder
+to the BBS, other people using yotta will be able to
+use it in their projects with:
+> yotta add #your_bbs_cart_id
+followed by a:
+> yotta apply
+I propose a convention of providing a primary
+'include entry point' (if applicable) of 'main.lua',
+so placing your library file in your
+ /ram/cart/exports/main.lua.
+But, all files in your exports/ folder will end up
+in the end-user's lib/your_package_name/ directory,
+so you can do as you will.
+
+-----------------------------------
+-- BUILD PKGS FOR USE WITH YOTTA --
+-----------------------------------
+It's also simple! Make an exports folder in your
+cartridge at /ram/cart/exports. Assume the contents
+of your cartridge's exports directory will be
+overlaid atop the end-user's Picotron drive starting
+at the root level. So, if you'd like to package a
+system-wide terminal utility, you would want to
+ensure that /ram/cart/exports/appdata/system/util
+exists as a folder, and inside of that, you would
+place your utility (like new.lua!).
+
+When end users use yotta to install your package
+cartridge, it will copy the exports tree over the
+root filesystem, and when users instruct yotta to
+uninstall it, it will remove the files present in your
+export tree from the user's filesystem (and will clean
+up empty directories if it leaves them).
+
+If you don't want to require your end users to use
+yotta to install your package, and your cart does
+nothing else but hold the package, you could use my
+package installer (#lib_utilinst, same as my library
+container). It will let people either manually copy the
+files out of /ram/cart/exports or will offer to
+install/uninstall it to their with similar logic to yotta
+(but without requiring yotta to be installed) by
+pressing X while running it.
+
+---------------------------
+-- HOW DO UPDATES WORK? --
+---------------------------
+If you include a BBS cartridge, you can specify a
+revision just like you could with the load command...
+or you can omit it to get the latest.
+You can choose at 'yotta add' time. For instance,
+if you wanted to fetch the first release of my
+utility shim cart, you'd use:
+> yotta add #lib_utilinst-0
+When you used 'yotta apply' or 'yotta force', it
+would always grab that version. If I fixed a bug
+in it and updated it, though, its cart ID would
+change to #lib_utilinst-1, but the first revision
+would remain accessible and would be fetched by
+yotta in this case. If you wanted yotta to
+automatically grab the latest revision possible,
+you can:
+> yotta add #lib_utilinst
+...and whenever you run a 'yotta apply' or 
+'yotta force', it would grab the latest revision
+(#lib_utilinst-1 or further).
+
+That's it!

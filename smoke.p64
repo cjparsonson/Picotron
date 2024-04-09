@@ -1,0 +1,108 @@
+picotron cartridge // www.picotron.net
+version 2
+
+:: gfx/
+:: gfx/0.gfx
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTI4IDA5OjMyOjI2Iixtb2RpZmllZD0iMjAyNC0w
+My0yOCAxNzowMjoyOSIscmV2aXNpb249NDBdXWx6NABtAAAABTEAAPMUe1swXT17Ym1wPXB4dQBD
+IBAQBPDwLGZsYWdzPTAscGFuX3gIAM95PTAsem9vbT04fSwxAP--------------------------
+-------------------------------------_dQbT04fX0=
+:: gfx/.info.pod
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTI4IDA5OjMyOjI2IixzdG9yZWQ9IjIwMjQtMDMt
+MjggMDk6MzI6MjYiXV1sejQABAAAAAMAAAAwbmls
+:: main.lua
+--[[pod_format="raw",created="2024-03-28 09:32:26",modified="2024-03-28 17:02:29",revision=78]]
+function make_smoke(x,y,init_size,col)
+	local s = {}
+	s.x = x
+	s.y = y
+	s.col = col
+	s.width = init_size
+	s.width_final = init_size + rnd(.8)+1
+	s.t = 0
+	s.max_t = 50+rnd(10)
+	s.dx = rnd(.8)
+	s.dy = rnd(.5)
+	s.ddy = .02
+	add(smoke,s)
+	return s
+end
+
+function move_smoke(sp)
+	if (sp.t>sp.max_t) then
+		del(smoke,sp)
+	end
+	if (sp.t>sp.max_t-20) then
+		sp.width+=1
+		sp.width=min(sp.width,sp.width_final)
+	end
+	sp.x=sp.x+sp.dx
+	sp.y=sp.y-sp.dy
+	sp.dy=sp.dy+sp.ddy
+	sp.t=sp.t+1
+end
+
+function draw_smoke(s)
+	circfill(s.x,s.y,s.width,s.col)
+end
+
+function _init()
+	smoke = {}
+	cursorx = 240
+	cursory = 135
+	color = 7
+end
+
+function _update()
+	local clk = time()/2
+	foreach(smoke,move_smoke)
+		if btn(0,0) then cursorx -= 1
+		end
+		if btn(1,0) then cursorx += 1
+		end
+		if btn(2,0) then cursory -= 1
+		end
+		if btn(3,0) then cursory += 1
+		end
+		if btn(4,0) then color = flr(rnd(16))
+		end
+	cursorx+=sin(clk)*1.3
+	cursory+=cos(clk)*.3
+	make_smoke(cursorx,cursory,rnd(4),color)
+end
+
+function _draw()
+	
+	cls()
+	
+	foreach(smoke,draw_smoke)
+end
+
+:: map/
+:: map/0.map
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTI4IDA5OjMyOjI2Iixtb2RpZmllZD0iMjAyNC0w
+My0yOCAxNzowMjoyOSIscmV2aXNpb249MzldXWx6NABoAAAAWBAAAPAIe3tibXA9dXNlcmRhdGEo
+ImkxNiIsMzIDAC8iMAEA--------------------_-EIIiksaGlkZGVuPWZhbHNlLHBhbl94PTAI
+ANJ5PTAsdGlsZV9oPTE2CgAQdwoAgHpvb209MX19
+:: map/.info.pod
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTI4IDA5OjMyOjI2IixzdG9yZWQ9IjIwMjQtMDMt
+MjggMDk6MzI6MjYiXV1sejQABAAAAAMAAAAwbmls
+:: sfx/
+:: sfx/0.sfx
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTI4IDA5OjMyOjI2Iixtb2RpZmllZD0iMjAyNC0w
+My0yOCAxNzowMjozMCIscmV2aXNpb249MzldXWx6NAAQAQAAUQcAAPAncHh1AAMoAAADAAQPQBAC
+DgABoAEgAqAOAA8QAA3wygECAwQFBgcAD-_QCAkKCw8MDw0PDg8PEADwAA0PEQ8SDxMPFA8VDxYP
+FxMA8QEPGA8ZDxoPGw8cDx0PHg8fFADxACAPIQ8iDyMPJA8lDyYPJxQA8QAoDykPKg8rDywPLQ8u
+Dy8UAPEAMA8xDzIPMw80DzUPNg83FAD-BTgPOQ86DzsPPA89Dz4PPwAP--D-AQDr-ydaARAGDyAQ
+ASABIAHwAAIQAgwQASAPISABMA9A8MMPKA--8MYP_AoP-w_AD-cPDQHwCQEQBgwwAP85H-8BANy-
+_A9AAA1A--_w8HAKAP--ZB--AQCXUP----8f
+:: sfx/.info.pod
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTI4IDA5OjMyOjI2IixzdG9yZWQ9IjIwMjQtMDMt
+MjggMDk6MzI6MjYiXV1sejQABAAAAAMAAAAwbmls
+:: .info.pod
+b64$LS1bW3BvZCxydW50aW1lPTQsc3RvcmVkPSIyMDI0LTAzLTI4IDE3OjAyOjMwIix3b3Jrc3Bh
+Y2VzPXt7bG9jYXRpb249Im1haW4ubHVhIzQzIix3b3Jrc3BhY2VfaW5kZXg9MX0se2xvY2F0aW9u
+PSJnZngvMC5nZngiLHdvcmtzcGFjZV9pbmRleD0yfSx7bG9jYXRpb249Im1hcC8wLm1hcCIsd29y
+a3NwYWNlX2luZGV4PTN9LHtsb2NhdGlvbj0ic2Z4LzAuc2Z4Iix3b3Jrc3BhY2VfaW5kZXg9NH19
+XV1sejQABAAAAAMAAAAwbmls
+:: [eoc]

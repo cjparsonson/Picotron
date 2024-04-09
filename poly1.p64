@@ -1,0 +1,34 @@
+--[[pod_format="raw",created="2024-03-22 09:44:03",modified="2024-03-22 09:44:03",revision=0]]
+ngon=3 -- number of polygon vertices
+rotspd=1/8 -- rotation speed
+
+function lerp(ab,t) return ab[1] + (ab[2]-ab[1])*t end
+function map(v,ab) return lerp(ab,v/2+.5) end
+
+function _update()
+	if (btnp(0)) ngon-=1
+	if (btnp(1)) ngon+=1
+	if (btnp(2)) rotspd+=.1
+	if (btnp(3)) rotspd-=.1
+	pts={}
+	for a=-1,1,1/ngon do
+		rad=map(cos(t()/2),{16,48})
+		add(pts,{
+			x=240+rad*cos(a+t()*rotspd),
+			y=135+rad*sin(a+t()*rotspd),
+			})
+	end
+end
+
+function _draw()
+	cls()
+	for i=1,#pts do
+		local p1,p2=pts[i],pts[i+1]
+		-- connect last and first point
+		if (i==#pts) p2=pts[1]
+		line(p1.x,p1.y,p2.x,p2.y,7)
+	end
+	color() cursor()
+	print("ngon "..ngon)
+	print("Rotspd "..rotspd)
+end

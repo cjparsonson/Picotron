@@ -1,0 +1,86 @@
+picotron cartridge // www.picotron.net
+version 2
+
+:: gfx/
+:: gfx/0.gfx
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTIyIDA5OjM4OjIyIixtb2RpZmllZD0iMjAyNC0w
+My0yMiAxNjozNToxMyIscmV2aXNpb249MTA0XV1sejQAbQAAAAUxAADzFHtbMF09e2JtcD1weHUA
+QyAQEATw8CxmbGFncz0wLHBhbl94CADPeT0wLHpvb209OH0sMQD-------------------------
+---------------------------------------nUG09OH19
+:: gfx/.info.pod
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTIyIDA5OjM4OjIyIixzdG9yZWQ9IjIwMjQtMDMt
+MjIgMDk6Mzg6MjIiXV1sejQABAAAAAMAAAAwbmls
+:: main.lua
+--[[pod_format="raw",created="2024-03-22 09:38:22",modified="2024-03-22 16:35:13",revision=202]]
+ngon=3 -- number of polygon vertices
+rotspd=1/8 -- rotation speed
+
+function lerp(ab,t) return ab[1] + (ab[2]-ab[1])*t end
+function map(v,ab) return lerp(ab,v/2+.5) end
+f=0 -- frame count
+col=0 --color index
+function _update()
+	if (btnp(0)) ngon-=1
+	if (btnp(1)) ngon+=1
+	if (btnp(2)) rotspd+=.1
+	if (btnp(3)) rotspd-=.1
+	if (btnp(4)) cls()
+	pts={}
+	for a=-1,1,1/ngon do
+		rad=map(cos(t()/2),{10,100})
+		add(pts,{
+			x=240+rad*cos(a+t()*rotspd),
+			y=135+rad*sin(a+t()*rotspd),
+			})
+	end
+end
+
+cls()
+function _draw()
+	
+	f+=1
+	for i=1,8000 do
+		local x,y = rnd(480),rnd(480)
+		circfill(x,y,rnd(2.5)^2,
+		max(0,pget(x,y+2)*0.001))
+	end
+	
+	for i=1,#pts do
+		local p1,p2=pts[i],pts[i+1]
+		-- connect last and first point
+		if (i==#pts) p2=pts[1]
+		line(p1.x,p1.y,p2.x,p2.y,f%8+8)
+	end
+	color() cursor()
+	print("ngon "..ngon)
+	print("Rotspd "..rotspd)
+end
+
+:: map/
+:: map/0.map
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTIyIDA5OjM4OjIyIixtb2RpZmllZD0iMjAyNC0w
+My0yMiAxNjozNToxMyIscmV2aXNpb249MTA0XV1sejQAVAAAAEQQAADwCHt7Ym1wPXVzZXJkYXRh
+KCJpMTYiLDMyAwAvIjABAP--------------------uhIikscGFuX3g9MAgA0nk9MCx0aWxlX2g9
+MTYKAGB3PTE2fX0=
+:: map/.info.pod
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTIyIDA5OjM4OjIyIixzdG9yZWQ9IjIwMjQtMDMt
+MjIgMDk6Mzg6MjIiXV1sejQABAAAAAMAAAAwbmls
+:: sfx/
+:: sfx/0.sfx
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTIyIDA5OjM4OjIyIixtb2RpZmllZD0iMjAyNC0w
+My0yMiAxNjozNToxNCIscmV2aXNpb249MTA0XV1sejQAEAEAAFEHAADwJ3B4dQADKAAAAwAED0AQ
+Ag4AAaABIAKgDgAPEAAN8MoBAgMEBQYHAA--kAgJCgsPDA8NDw4PDxAA8AANDxEPEg8TDxQPFQ8W
+DxcTAPEBDxgPGQ8aDxsPHA8dDx4PHxQA8QAgDyEPIg8jDyQPJQ8mDycUAPEAKA8pDyoPKw8sDy0P
+Lg8vFADxADAPMQ8yDzMPNA81DzYPNxQA-wU4DzkPOg87DzwPPQ8_Dz8AD--w-wEA6-8nWgEQBg8g
+EAEgASAB8AACEAIMEAEgDyEgATAPQPDDDygP--DGD-gKD-8PgA-3Dw0B8AkBEAYMMAD-OR--AQDc
+v-gPQAANQP--sPBwCgD--2Qf-wEAl1D-----Hw==
+:: sfx/.info.pod
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTIyIDA5OjM4OjIyIixzdG9yZWQ9IjIwMjQtMDMt
+MjIgMDk6Mzg6MjIiXV1sejQABAAAAAMAAAAwbmls
+:: .info.pod
+b64$LS1bW3BvZCxzdG9yZWQ9IjIwMjQtMDMtMjIgMTY6MzU6MTQiLHdvcmtzcGFjZXM9e3tsb2Nh
+dGlvbj0ibWFpbi5sdWEjMjgiLHdvcmtzcGFjZV9pbmRleD0xfSx7bG9jYXRpb249ImdmeC8wLmdm
+eCIsd29ya3NwYWNlX2luZGV4PTJ9LHtsb2NhdGlvbj0ibWFwLzAubWFwIix3b3Jrc3BhY2VfaW5k
+ZXg9M30se2xvY2F0aW9uPSJzZngvMC5zZngiLHdvcmtzcGFjZV9pbmRleD00fX1dXWx6NAAEAAAA
+AwAAADBuaWw=
+:: [eoc]

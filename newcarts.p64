@@ -1,0 +1,249 @@
+--[[pod_format="raw",created="2024-03-25 13:04:04",modified="2024-03-25 13:04:04",revision=0]]
+--Loads carts from first page of bbs. If anyone can figure out how to load more
+--pages that would be great. 
+window_width = 250
+window_hieght = 240
+border = 20
+window({ width = window_width, height = window_hieght, title = "New Carts" })
+
+function _init()
+p={x=0,y=0,c=0}
+c = 1
+clicked = false
+canclick = false
+liststart = 1
+listlength =10
+carts = {}
+listnum = 0
+pagenum = 1
+g= fetch("https://www.lexaloffle.com/bbs/?cat=8&page="..pagenum)
+startat  =1
+
+if g:find("donswelt",startat) then
+test ="yep"
+end
+
+ while g:find("/bbs/thumbs/pico64_",startat) and listnum<=100 do
+listnum +=1
+f = g:find("/bbs/thumbs/pico64_",startat)
+e = g:find(".",f+18,1,true)
+filename = g:sub(f+19,e-1)
+startat = e
+title = filename:gsub("_"," ")
+title = title:gsub("-%d+","")
+title = string.upper(title)
+timestamp = timeconversion(g:sub(e+13,e+31))
+as = g:find("%a",e+31)
+ae = g:find(",",as)
+author = g:sub(as,ae-2)
+add(carts,{t = timestamp,n=title, f = filename, a = author})
+sort(carts)
+if g:find("/bbs/thumbs/pico64_",startat) == nil then
+pagenum+=1
+startat = 1
+g= fetch("https://www.lexaloffle.com/bbs/?cat=8&page="..pagenum)
+end
+end
+
+end
+
+function _update()
+p.x,p.y,p.c=mouse()
+if p.c ==0 and clicked == true then
+clicked  = false
+end
+--print(e)
+end
+
+function sort(a)
+    for i=1,#a do
+        local j = i
+        while j > 1 and a[j-1].t < a[j].t do
+            a[j].t,a[j-1].t = a[j-1].t,a[j].t
+            a[j].n,a[j-1].n = a[j-1].n,a[j].n
+            a[j].f,a[j-1].f = a[j-1].f,a[j].f
+            a[j].a,a[j-1].a = a[j-1].a,a[j].a
+            j = j - 1
+        end
+    end
+end
+
+function timeconversion(t)
+local date=(tonumber(t:sub(1,4))-2023)*365
+date = date+ tonumber(t:sub(6,7))*31
+date = date+ tonumber(t:sub(9,10))
+local hour = tonumber(t:sub(18,19))/86400
+hour =(hour+ tonumber(t:sub(15,16)))/1440
+hour =(hour+ tonumber(t:sub(12,13)))/24
+return date+hour
+end
+
+function _draw()
+cls()
+if listlength!=listnum then
+spr(0,window_width-border+2,215)
+end
+if liststart!=1 then
+spr(1,window_width-border+2,35)
+end
+print("NEW CARTS!",(window_width/2)-20,10,7)
+print("Fresh from the BBS. Click to load into RAM",border,25,7)
+startpos = 40
+canclick = false
+
+
+if p.x>= window_width-border+2 and p.x<=window_width-border+18 and p.y>=215 and p.y<=231 then
+if  p.c==1 and clicked ==false and listlength !=listnum then
+liststart = listlength+1
+if listnum-listlength>10 then
+listlength = listlength+10
+else
+listlength+=listnum-listlength
+end
+clicked = true
+end
+end
+
+if p.x>= window_width-border+2 and p.x<=window_width-border+18 and p.y>=35 and p.y<=51 then
+if  p.c==1 and clicked ==false and liststart!=1 then
+liststart = liststart-10
+if liststart<1 then
+liststart = 1
+end
+listlength = liststart+9
+clicked = true
+end
+end
+
+for i=liststart, listlength do
+if p.x>=border and p.x<=window_width-border and p.y>=startpos-5 and p.y<=startpos+10 then
+c = 13
+ac  =9
+filename = carts[i].f
+canclick = true
+else
+c=1
+ac = 4
+end
+
+rectfill(border,startpos-5,window_width/2,startpos+10,c)
+rectfill(window_width/2,startpos-5,window_width-border,startpos+10,ac)
+print(carts[i].n,border+5,startpos,7)
+print("by "..carts[i].a,(window_width/2)+5,startpos,7)
+startpos+=20
+end
+if p.c == 1 and canclick == true then
+
+--Dropped basically all of /ststem/util/load into here
+--There was probably a better way...
+-- Not sure if there's a way to run the function from here but I did this instead.
+
+-- bbs cart?
+
+if clicked == false then
+	clicked = true
+	-- print("downloading..")
+	local cart_id = filename
+	local cart_png = fetch("https://www.lexaloffle.com/bbs/get_cart.php?cat=8&lid="..cart_id)  -- ***** this is not a public api! [yet?] *****
+	--local cart_png = fetch("http://localhost/bbs/get_cart.php?cat=8&lid="..cart_id)
+	if (type(cart_png) == "string" and #cart_png > 0) then
+		print(#cart_png.." bytes")
+		rm "/ram/bbs_cart.p64.png"
+		store("/ram/bbs_cart.p64.png", cart_png)
+
+		-- switcheroony
+		filename = "/ram/bbs_cart.p64.png"
+	else
+		print("download failed")
+		exit(0)
+	end
+end
+
+
+attrib = fstat(filename)
+if (attrib ~= "folder") then
+	-- doesn't exist or a file --> try with .p64 extension
+	filename = filename..".p64"
+	if (fstat(filename) ~= "folder") then
+		print("could not load")
+		exit(1)
+	end
+end
+
+
+-- remove currently loaded cartridge
+rm("/ram/cart")
+
+-- create new one
+local result = cp(filename, "/ram/cart")
+if (result) then
+	print(result)
+	exit(1)
+end
+
+-- set current project filename
+
+store("/ram/system/pwc.pod", fullpath(filename))
+
+
+-- tell window manager to clear out all workspaces
+send_message(3, {event="clear_project_workspaces"})
+
+
+
+dat = fetch_metadata("/ram/cart")
+if (dat) dat = dat.workspaces
+
+--[[ deleteme
+	dat = fetch("/ram/cart".."/.workspaces.pod")
+	if (not dat) printh("*** could not find\n")
+]]
+
+-- legacy location;  to do: deleteme
+if (not dat) then
+	dat = fetch("/ram/cart/_meta/workspaces.pod")
+	if (dat) printh("** fixme: using legacy _meta/workspaces.pod")
+end
+
+-- legacy location;  to do: deleteme
+if (not dat) then
+	dat = fetch("/ram/cart/workspaces.pod")
+	if (dat) printh("** fixme: found /workspaces.pod")
+end
+
+
+if (type(dat) == "table") then
+
+	-- open in background (don't show in workspace)
+	local edit_argv = {"-b"}
+
+	for i=1,#dat do
+
+		local ti = dat[i]
+		local location = ti.location or ti.cproj_file -- cproj_file is dev legacy
+		if (location) then
+
+			-- separate the filename part of the location (/foo.lua#33 -> /foo.lua)
+			-- local filename = split(location, "#", false)[1]  -- commented; includes the location string
+
+			-- printh("@@ opening ".."/ram/cart/"..location)
+			add(edit_argv, "/ram/cart/"..location)
+
+		end
+	end
+
+	-- open all at once
+	create_process("/system/util/open.lua",
+		{
+			argv = edit_argv,
+			pwd = "/ram/cart"
+		}
+	)
+
+end
+
+print("loaded "..filename.." into /ram/cart")
+
+end
+
+end

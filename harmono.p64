@@ -1,0 +1,113 @@
+picotron cartridge // www.picotron.net
+version 2
+
+:: gfx/
+:: gfx/0.gfx
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTI1IDEzOjExOjMxIixtb2RpZmllZD0iMjAyNC0w
+My0yNiAxNjo1NDo1OCIscmV2aXNpb249MTM3XV1sejQAbQAAAAUxAADzFHtbMF09e2JtcD1weHUA
+QyAQEATw8CxmbGFncz0wLHBhbl94CADPeT0wLHpvb209OH0sMQD-------------------------
+---------------------------------------nUG09OH19
+:: gfx/.info.pod
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTI1IDEzOjExOjMxIixzdG9yZWQ9IjIwMjQtMDMt
+MjUgMTM6MTE6MzEiXV1sejQABAAAAAMAAAAwbmls
+:: main.lua
+--[[pod_format="raw",created="2024-03-25 13:11:31",modified="2024-03-26 16:54:58",revision=266]]
+--harmonograph program
+--x=a*cos(ft+p)e-dt
+--y=a*sin(ft+p)e-dt
+width=480
+height=270
+pi=3.16
+t=0
+e=2.71828
+a1=100
+a2=100
+f1=2.8
+f2=2.3
+p1=0
+p2=pi/2
+d1=0.02
+d2=0.02
+col=8
+points={}
+i=1
+
+function _init()
+	camera(-width/2,-height/2)
+end
+
+function _update()
+	if (btnp(2)) then
+	   print("F1:"..f1,-200,-100,0)
+		f1+=0.1
+	end
+	if (btnp(3)) then
+ 	   print("F1:"..f1,-200,-100,0)
+		f1-=0.1
+	end
+	if (btnp(0)) then
+	   print("F2:"..f2,-200,-80,0)
+		f2-=0.1
+	end
+	if (btnp(1)) then
+	   print("F2:"..f2,-200,-80,0)
+		f2+=0.1
+	end
+	if (btnp(4)) then
+		cls()
+	end
+end
+
+function _draw()
+	--cls()
+	t=time()*0.7
+	x=a1*cos(f1*t+p1)*e^(-d1*t)
+	y=a2*cos(f2*t+p2)*e^(-d2*t)
+	if i>1 then
+		line(points[i-1].x,points[i-1].y,x,y,col)
+	end
+	pair={}
+	pair.x=x
+	pair.y=y
+	points[i]=pair
+	i+=1
+	pset(x,y,11)
+	if i%250==0 then
+		col+=1
+	end
+	print("F1:"..f1,-200,-100,11)
+	print("F2:"..f2,-200,-80,11)
+end
+
+	
+
+	
+
+:: map/
+:: map/0.map
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTI1IDEzOjExOjMxIixtb2RpZmllZD0iMjAyNC0w
+My0yNiAxNjo1NDo1OCIscmV2aXNpb249MTM0XV1sejQAaAAAAFgQAADwCHt7Ym1wPXVzZXJkYXRh
+KCJpMTYiLDMyAwAvIjABAP--------------------vxCCIpLGhpZGRlbj1mYWxzZSxwYW5feD0w
+CADSeT0wLHRpbGVfaD0xNgoAEHcKAIB6b29tPTF9fQ==
+:: map/.info.pod
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTI1IDEzOjExOjMxIixzdG9yZWQ9IjIwMjQtMDMt
+MjUgMTM6MTE6MzEiXV1sejQABAAAAAMAAAAwbmls
+:: sfx/
+:: sfx/0.sfx
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTI1IDEzOjExOjMyIixtb2RpZmllZD0iMjAyNC0w
+My0yNiAxNjo1NDo1OCIscmV2aXNpb249MTMzXV1sejQAEAEAAFEHAADwJ3B4dQADKAAAAwAED0AQ
+Ag4AAaABIAKgDgAPEAAN8MoBAgMEBQYHAA--kAgJCgsPDA8NDw4PDxAA8AANDxEPEg8TDxQPFQ8W
+DxcTAPEBDxgPGQ8aDxsPHA8dDx4PHxQA8QAgDyEPIg8jDyQPJQ8mDycUAPEAKA8pDyoPKw8sDy0P
+Lg8vFADxADAPMQ8yDzMPNA81DzYPNxQA-wU4DzkPOg87DzwPPQ8_Dz8AD--w-wEA6-8nWgEQBg8g
+EAEgASAB8AACEAIMEAEgDyEgATAPQPDDDygP--DGD-gKD-8PgA-3Dw0B8AkBEAYMMAD-OR--AQDc
+v-gPQAANQP--sPBwCgD--2Qf-wEAl1D-----Hw==
+:: sfx/.info.pod
+b64$LS1bW3BvZCxjcmVhdGVkPSIyMDI0LTAzLTI1IDEzOjExOjMxIixzdG9yZWQ9IjIwMjQtMDMt
+MjUgMTM6MTE6MzEiXV1sejQABAAAAAMAAAAwbmls
+:: .info.pod
+b64$LS1bW3BvZCxzdG9yZWQ9IjIwMjQtMDMtMjYgMTY6NTQ6NTgiLHdvcmtzcGFjZXM9e3tsb2Nh
+dGlvbj0ibWFpbi5sdWEjMzkiLHdvcmtzcGFjZV9pbmRleD0xfSx7bG9jYXRpb249ImdmeC8wLmdm
+eCIsd29ya3NwYWNlX2luZGV4PTJ9LHtsb2NhdGlvbj0ibWFwLzAubWFwIix3b3Jrc3BhY2VfaW5k
+ZXg9M30se2xvY2F0aW9uPSJzZngvMC5zZngiLHdvcmtzcGFjZV9pbmRleD00fX1dXWx6NAAEAAAA
+AwAAADBuaWw=
+:: [eoc]
